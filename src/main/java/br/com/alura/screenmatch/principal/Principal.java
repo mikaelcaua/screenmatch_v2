@@ -82,7 +82,9 @@ public class Principal {
     }
 
     private void buscarEpisodioPorSerie(){
-        DadosSerie dadosSerie = getDadosSerie();
+        System.out.println("Escolha uma serie pelo nome:");
+        var nomeserie = leitura.nextLine();
+
         List<DadosTemporada> temporadas = new ArrayList<>();
 
         for (int i = 1; i <= dadosSerie.totalTemporadas(); i++) {
