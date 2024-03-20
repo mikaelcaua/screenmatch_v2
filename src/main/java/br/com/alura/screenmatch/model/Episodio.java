@@ -8,6 +8,9 @@ import java.time.format.DateTimeParseException;
 @Entity
 @Table(name = "episodios")
 public class Episodio {
+    public Episodio() {
+    }
+
     private Integer temporada;
     private String titulo;
     private Integer numeroEpisodio;
@@ -76,6 +79,10 @@ public class Episodio {
 
     public void setDataLancamento(LocalDate dataLancamento) {
         this.dataLancamento = dataLancamento;
+    }
+
+    public void setSerie(Serie serie) {
+        this.serie = serie;
     }
 
     @Override
