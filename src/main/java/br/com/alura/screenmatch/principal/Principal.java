@@ -1,9 +1,6 @@
 package br.com.alura.screenmatch.principal;
 
-import br.com.alura.screenmatch.model.DadosSerie;
-import br.com.alura.screenmatch.model.DadosTemporada;
-import br.com.alura.screenmatch.model.Episodio;
-import br.com.alura.screenmatch.model.Serie;
+import br.com.alura.screenmatch.model.*;
 import br.com.alura.screenmatch.repository.SerieRepository;
 import br.com.alura.screenmatch.service.ConsumoApi;
 import br.com.alura.screenmatch.service.ConverteDados;
@@ -37,6 +34,11 @@ public class Principal {
                 1 - Buscar séries
                 2 - Buscar episódios
                 3 - Mostrar Séries Buscadas
+                4 - Buscar série por titulo
+                5 - Buscar série por autor
+                6 - Top 5 séries
+                7 - Buscar Por Gênero
+                8 - Top 5 episódios de uma série
                 0 - Sair                                 
                 """;
 
@@ -57,6 +59,21 @@ public class Principal {
                     break;
                 case 3:
                     mostrarSeriesBuscadas();
+                    break;
+                case 4:
+                    buscarSeriePorTitulo();
+                    break;
+                case 5:
+                    buscarSeriePorAutor();
+                    break;
+                case 6:
+                    listarMelhoresSeries();
+                    break;
+                case 7:
+                    buscarPorGenero();
+                    break;
+                case 8:
+                    topFiveEpisodesSerie();
                     break;
                 case 0:
                     System.out.println("Saindo...");
@@ -92,12 +109,10 @@ public class Principal {
     }
 
     private void buscarEpisodioPorSerie(){
-        System.out.println("Escolha uma serie pelo nome:");
+        System.out.println("Escolha uma serie pelo nome para mostrar os episódios:");
         var nomeserie = leitura.nextLine();
 
-        Optional<Serie> serieOptional = listSeries.stream()
-                    .filter(s-> s.getTitulo().toLowerCase().trim().contains(nomeserie.toLowerCase().trim()))
-                    .findFirst();
+        Optional<Serie> serieOptional = repository.findByTituloContainingIgnoreCase(nomeserie);
         List<DadosTemporada> temporadas = new ArrayList<>();
 
         if(serieOptional.isPresent()){
@@ -125,4 +140,66 @@ public class Principal {
         }
 
     }
+
+    private void buscarSeriePorTitulo(){
+        System.out.println("Digite o nome da série que você deseja buscar: ");
+        String titulo = leitura.nextLine();
+        Optional <Serie> serie = repository.findByTituloContainingIgnoreCase(titulo);
+        if(serie.isPresent()){
+            Serie buscada = serie.get();
+            System.out.println("Série encontrada:"+ buscada);
+        }
+        else{
+            System.out.println("Série não encontrada no banco");
+        }
+
+    }
+
+    private void buscarSeriePorAutor(){
+        System.out.println("Digite o nome do autor:");
+        String nomeAutor = leitura.nextLine();
+
+        Optional<List<Serie>> series = repository.findByAtoresContainingIgnoreCase(nomeAutor);
+
+        if(series.isPresent()){
+            List<Serie> buscadas = series.get();
+            System.out.println("Séries em que "+nomeAutor+" trabalhou:");
+            buscadas.forEach(s -> System.out.println(s.getTitulo()));
+        }
+        else{
+            System.out.println("Nenhuma série foi encontrada no banco");
+        }
+
+
+    }
+
+    private void listarMelhoresSeries(){
+        Optional<List<Serie>> series = repository.findTop5ByOrderByAvaliacaoDesc();
+        if(series.isPresent()){
+            List<Serie> ordenadas = series.get();
+            ordenadas.forEach(s -> System.out.println(s.getTitulo()+ " -- "+ s.getAvaliacao()));
+        }
+        else{
+            System.out.println("Não foi possivel ordenar as series");
+        }
+    }
+
+    private void buscarPorGenero(){
+        System.out.println("Digite o genero das séries que você deseja buscar: ");
+        String genero = leitura.nextLine();
+        Categoria categoria = Categoria.fromStringPortugues(genero);
+        Optional<List<Serie>> series = repository.findByGenero(categoria);
+        if(series.isPresent()){
+            List <Serie> buscadas = series.get();
+            buscadas.forEach(s -> System.out.println(s.getTitulo() + " -- "+s.getGenero()));
+        }
+    }
+
+    private void topFiveEpisodesSerie(){
+        Optional<List<Episodio>> episodios = repository.orderEpisodes("Breaking Bad");
+        if(episodios.isPresent()){
+            List<Episodio> melhores = episodios.get();
+            melhores.forEach(e -> System.out.println(e.getTitulo()+ " -- "+e.getAvaliacao()));
+        }
+    };
 }
